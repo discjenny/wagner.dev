@@ -1,0 +1,9 @@
+[package]
+name = "dev"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+axum = { version = "0.8.4", features = ["macros"] }
+tokio = { version = "1.45.1", features = ["macros", "rt-multi-thread", "net"] }
+tower-http = { version = "0.6.6", features = ["fs"] } 

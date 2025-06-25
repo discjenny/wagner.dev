@@ -3,6 +3,7 @@ use axum::{
     routing::{get},
     Router
 };
+use tower_http::services::ServeDir;
 
 mod routes;
 mod middleware;
@@ -13,8 +14,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/", get(routes::pages::index))
-        .route("/favicon.ico", get(routes::pages::favicon))
-        .route("/favicon.svg", get(routes::pages::favicon))
+        .nest_service("/static", ServeDir::new("static"))
         .fallback(routes::pages::not_found)
         .layer(axum_mw::from_fn(mw::logger));
 
