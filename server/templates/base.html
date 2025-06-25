@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>wagner.dev</title>
+    <title>{% block title %}wagner.dev{% endblock %}</title>
     <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
     <link rel="alternate icon" href="/static/favicon.ico">
     <link rel="stylesheet" href="/static/computed.f9cb2676.css">
 </head>
-<body class="min-h-screen bg-background text-foreground flex items-center justify-center">
+<body class="min-h-screen bg-background text-foreground flex items-center justify-center{% block body_classes %}{% endblock %}">
     <!-- Theme Toggle Button -->
     <button 
         id="theme-toggle"
@@ -20,16 +20,8 @@
         </span>
     </button>
 
-    <div class="text-center max-w-2xl px-8">
-        <h1 class="text-5xl md:text-6xl font-light mb-4 tracking-tight text-foreground">wagner.dev</h1>
-        <p class="text-xl md:text-2xl font-light text-muted-foreground mb-8 leading-relaxed">
-            Personal site coming soon
-        </p>
-        <div class="inline-block px-6 py-2 border border-border rounded-full text-sm text-muted-foreground bg-card/50 backdrop-blur-sm">
-            Under Construction
-        </div>
-    </div>
+    {% block content %}{% endblock %}
 
     <script src="/static/js/theme.js"></script>
 </body>
-</html>
+</html> 

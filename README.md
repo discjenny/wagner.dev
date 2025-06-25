@@ -6,6 +6,7 @@ cargo run -p tailwind
 # development
 ```bash
 cargo run -p dev
+```
 
 # deployment
 
