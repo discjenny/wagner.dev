@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" 
+     width="100" 
+     height="100" 
+     viewBox="0 0 100 100" 
+     role="img" 
+     aria-label="Geometric J logo">
+  <defs>
+    <!-- Gradient for the main J shape -->
+    <linearGradient id="jGradientBluePurple" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7F00FF"/> <!-- Violet -->
+      <stop offset="100%" stop-color="#00BFFF"/> <!-- Deep Sky Blue -->
+    </linearGradient>
+  </defs>
+
+  <path fill="url(#jGradientBluePurple)" 
+        d="M 65 15 
+           L 65 80 
+           Q 65 95 45 95 
+           Q 25 95 25 80 
+           L 25 45 
+           L 35 45 
+           L 35 80 
+           Q 35 85 45 85 
+           Q 55 85 55 80 
+           L 55 15 
+           Z"/>
+
+</svg>
