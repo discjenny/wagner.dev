@@ -30,7 +30,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     fs::rename(old_path, &new_path)?;
 
     println!("updating html references...");
-    let html_pattern = "pages/**/*.html";
+    let html_pattern = "server/templates/**/*.html";
     let css_regex = Regex::new(r#"(?P<before>href=["'])(?P<path>/static/)computed\.(?:[a-f0-9]{8}\.)?css(?P<after>["'])"#)?;
     let replacement = format!("${{before}}${{path}}{}${{after}}", new_filename);
 

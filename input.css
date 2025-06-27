@@ -1,6 +1,6 @@
 @import "tailwindcss";
 @source "./server/src/**/*.rs";
-@source "./pages/**/*.html";
+@source "./server/templates/**/*.html";
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
@@ -45,7 +45,7 @@
 
 /* Light Theme Variables - Terminal Style */
 :root {
-  --radius: 0.375rem;
+  --radius: 2px;
 
   /* Terminal Light - Crisp whites and blacks with subtle purple hints */
   --background: oklch(0.99 0.005 260); /* Near pure white with tiny purple hint */
@@ -57,22 +57,22 @@
 
   /* Secondary elements - Light grays */
   --secondary: oklch(0.96 0.01 260); /* Light gray with purple hint */
-  --secondary-foreground: oklch(0.25 0.015 260); /* Dark gray */
+  --secondary-foreground: oklch(0.2 0.02 260); /* Darker gray for better contrast */
   --muted: oklch(0.975 0.008 260); /* Very light muted gray */
-  --muted-foreground: oklch(0.45 0.015 260); /* Medium gray */
+  --muted-foreground: oklch(0.35 0.025 260); /* Much darker gray for readability */
   --border: oklch(0.88 0.015 260); /* Light border gray */
   --input: oklch(0.96 0.01 260); /* Input background */
   --sidebar: oklch(0.97 0.008 260); /* Sidebar background */
   --sidebar-foreground: var(--secondary-foreground);
   --sidebar-border: oklch(0.85 0.02 260); /* Sidebar border */
 
-  /* Accent - Very subtle purple */
-  --primary: oklch(0.35 0.08 270); /* Subtle dark purple */
+  /* Accent - More distinct purple */
+  --primary: oklch(0.4 0.12 270); /* More saturated dark purple for better visibility */
   --primary-foreground: oklch(0.98 0.005 270); /* Light text on purple */
-  --accent: oklch(0.92 0.02 270); /* Very light purple accent */
-  --accent-foreground: oklch(0.2 0.05 270); /* Dark text on light accent */
+  --accent: oklch(0.88 0.04 270); /* More visible purple accent */
+  --accent-foreground: oklch(0.15 0.08 270); /* Darker text on light accent for better contrast */
   --destructive: oklch(0.5 0.15 10); /* Muted red */
-  --ring: oklch(0.35 0.08 270); /* Focus ring - subtle purple */
+  --ring: oklch(0.4 0.12 270); /* Focus ring - more visible purple */
   --chart-1: oklch(0.4 0.06 270); /* Chart colors - muted purples and grays */
   --chart-2: oklch(0.5 0.04 280);
   --chart-3: oklch(0.3 0.08 260);
@@ -97,22 +97,22 @@
 
   /* Secondary elements - Dark grays */
   --secondary: oklch(0.18 0.02 260); /* Dark gray */
-  --secondary-foreground: oklch(0.88 0.01 260); /* Light gray text */
+  --secondary-foreground: oklch(0.92 0.01 260); /* Brighter light gray text for better contrast */
   --muted: oklch(0.15 0.018 260); /* Muted dark gray */
-  --muted-foreground: oklch(0.65 0.015 260); /* Medium light gray */
+  --muted-foreground: oklch(0.75 0.02 260); /* Much brighter gray for readability */
   --border: oklch(0.22 0.025 260 / 60%); /* Subtle border */
   --input: oklch(0.18 0.02 260 / 80%); /* Input background */
   --sidebar: oklch(0.06 0.008 260); /* Very dark sidebar */
   --sidebar-foreground: var(--secondary-foreground);
   --sidebar-border: oklch(0.2 0.02 260 / 50%); /* Subtle sidebar border */
 
-  /* Accent - Very subtle purple */
-  --primary: oklch(0.65 0.08 270); /* Subtle bright purple */
+  /* Accent - More distinct purple */
+  --primary: oklch(0.7 0.12 270); /* More saturated bright purple for better visibility */
   --primary-foreground: oklch(0.08 0.01 270); /* Dark text on purple */
-  --accent: oklch(0.25 0.04 270); /* Dark purple accent */
-  --accent-foreground: oklch(0.9 0.01 270); /* Light text on dark accent */
+  --accent: oklch(0.3 0.08 270); /* More visible dark purple accent */
+  --accent-foreground: oklch(0.95 0.01 270); /* Brighter text on dark accent for better contrast */
   --destructive: oklch(0.65 0.15 10); /* Brighter red for dark theme */
-  --ring: oklch(0.65 0.08 270); /* Focus ring - subtle bright purple */
+  --ring: oklch(0.7 0.12 270); /* Focus ring - more visible bright purple */
   --chart-1: oklch(0.6 0.06 270); /* Chart colors - muted purples and grays */
   --chart-2: oklch(0.7 0.04 280);
   --chart-3: oklch(0.5 0.08 260);
@@ -125,14 +125,29 @@
   --sidebar-ring: var(--ring);
 }
 
+/* Custom Font Imports */
+@font-face {
+  font-family: 'Fira Code';
+  src: url('/static/fira_code.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap; /* Improves loading performance */
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
-    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'SF Mono', Consolas, 'Liberation Mono', Menlo, Monaco, 'Courier New', monospace;
+    font-family: 'Fira Code', 'JetBrains Mono', 'Cascadia Code', 'SF Mono', Consolas, 'Liberation Mono', Menlo, Monaco, 'Courier New', monospace;
     font-feature-settings: 'liga' 1, 'calt' 1; /* Enable ligatures and contextual alternates */
+    /* Terminal font rendering */
+    text-rendering: optimizeSpeed;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.025em;
   }
 
   /* Modern Scrollbar Styling */

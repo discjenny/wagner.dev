@@ -47,7 +47,6 @@ impl From<jsonwebtoken::errors::Error> for TokenError {
     }
 }
 
-/// Generate token for anonymous user with theme preferences
 pub fn generate_anonymous_token() -> Result<String, TokenError> {
     let now = chrono::Utc::now().timestamp() as usize;
     let exp = now + (365 * 24 * 60 * 60);
@@ -66,7 +65,6 @@ pub fn generate_anonymous_token() -> Result<String, TokenError> {
     ).map_err(|_| TokenError::GenerationFailed)
 }
 
-/// Generate token for authenticated user (future use)
 pub fn generate_user_token(user_id: i32) -> Result<String, TokenError> {
     let now = chrono::Utc::now().timestamp() as usize;
     let exp = now + (30 * 24 * 60 * 60);
@@ -98,7 +96,6 @@ pub fn verify_token(token: &str) -> Result<Claims, TokenError> {
     Ok(token_data.claims)
 }
 
-/// Get the database preference key for a user (anonymous or authenticated)
 pub fn get_preference_key(claims: &Claims) -> String {
     if let Some(user_id) = claims.user_id {
         format!("user_{}", user_id)
@@ -109,12 +106,11 @@ pub fn get_preference_key(claims: &Claims) -> String {
     }
 }
 
-/// Check if token represents an authenticated user
-pub fn is_authenticated(claims: &Claims) -> bool {
-    claims.user_id.is_some()
-}
+// pub fn is_authenticated(claims: &Claims) -> bool {
+//     claims.user_id.is_some()
+// }
 
-/// Check if token is close to expiration (within 7 days)
+// check if token is within 7 days of expiration
 pub fn should_refresh_token(claims: &Claims) -> bool {
     let now = chrono::Utc::now().timestamp() as usize;
     let seven_days = 7 * 24 * 60 * 60;
@@ -132,7 +128,7 @@ mod tests {
         
         assert!(claims.anonymous_id.is_some());
         assert!(claims.user_id.is_none());
-        assert!(!is_authenticated(&claims));
+        // assert!(!is_authenticated(&claims));
         
         let key = get_preference_key(&claims);
         assert!(key.starts_with("anon_"));
@@ -146,7 +142,7 @@ mod tests {
         
         assert!(claims.anonymous_id.is_none());
         assert_eq!(claims.user_id, Some(user_id));
-        assert!(is_authenticated(&claims));
+        // assert!(is_authenticated(&claims));
         
         let key = get_preference_key(&claims);
         assert_eq!(key, "user_123");

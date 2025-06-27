@@ -1,16 +1,17 @@
 use axum::{
     extract::{Extension, Form},
-    http::StatusCode,
-    response::{IntoResponse, Html},
+    response::{IntoResponse},
     Json,
 };
 use tower_cookies::{Cookie, Cookies};
 use serde::{Deserialize, Serialize};
 use time::Duration;
+use std::borrow::Cow;
 
 use crate::database::DbPool;
 use crate::middleware::UserContext;
 use crate::token;
+use crate::DEFAULT_THEME;
 
 #[derive(Debug, Deserialize)]
 pub struct ThemeForm {
@@ -23,23 +24,19 @@ pub struct ThemeResponse {
     pub success: bool,
 }
 
-/// Get current user's theme preference
 pub async fn get_theme(
     Extension(user_context): Extension<UserContext>,
     Extension(db_pool): Extension<DbPool>,
 ) -> impl IntoResponse {
-    let theme = match get_user_theme(&user_context, &db_pool).await {
-        Ok(theme) => theme,
-        Err(_) => "dark".to_string(),
-    };
+    let theme = get_user_theme(&user_context, &db_pool).await
+        .unwrap_or(Cow::Borrowed(DEFAULT_THEME));
 
     Json(ThemeResponse {
-        theme,
+        theme: theme.into_owned(),
         success: true,
     })
 }
 
-/// Set user's theme preference
 pub async fn set_theme(
     cookies: Cookies,
     Extension(user_context): Extension<UserContext>,
@@ -48,7 +45,7 @@ pub async fn set_theme(
 ) -> impl IntoResponse {
     if !matches!(form.theme.as_str(), "light" | "dark") {
         return Json(ThemeResponse {
-            theme: "dark".to_string(),
+            theme: DEFAULT_THEME.to_string(),
             success: false,
         }).into_response();
     }
@@ -57,7 +54,7 @@ pub async fn set_theme(
         Ok(claims) => claims,
         Err(_) => {
             return Json(ThemeResponse {
-                theme: "dark".to_string(),
+                theme: DEFAULT_THEME.to_string(),
                 success: false,
             }).into_response();
         }
@@ -72,18 +69,18 @@ pub async fn set_theme(
         }
         Err(_) => {
             Json(ThemeResponse {
-                theme: "dark".to_string(),
+                theme: DEFAULT_THEME.to_string(),
                 success: false,
             }).into_response()
         }
     }
 }
 
-/// Get user's theme from database or return default
+// get user theme from database or return default
 async fn get_user_theme(
     user_context: &UserContext,
     db_pool: &DbPool,
-) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
+) -> Result<Cow<'static, str>, Box<dyn std::error::Error + Send + Sync>> {
     if let Some(claims) = user_context.get_claims() {
         let preference_key = token::get_preference_key(claims);
         
@@ -94,14 +91,13 @@ async fn get_user_theme(
 
         if let Some(row) = rows.first() {
             let theme: String = row.get("theme");
-            return Ok(theme);
+            return Ok(Cow::Owned(theme));
         }
     }
 
-    Ok("dark".to_string())
+    Ok(Cow::Borrowed(DEFAULT_THEME))
 }
 
-/// Save user's theme preference to database
 async fn save_user_theme(
     claims: &token::Claims,
     theme: &str,
@@ -122,7 +118,7 @@ async fn save_user_theme(
     Ok(())
 }
 
-/// Ensure user has a valid token, creating one if needed
+// ensure user has a valid token, creating one if needed
 async fn ensure_user_token(
     user_context: &UserContext,
     cookies: &Cookies,
@@ -150,10 +146,8 @@ async fn ensure_user_token(
     }
 }
 
-/// Set secure auth cookie
 fn set_auth_cookie(cookies: &Cookies, token: &str) {
-    let token_owned = token.to_string();
-    let cookie = Cookie::build(("auth_token", token_owned))
+    let cookie = Cookie::build(("auth_token", token.to_string()))
         .http_only(true)
         .secure(true)
         .same_site(tower_cookies::cookie::SameSite::Strict)

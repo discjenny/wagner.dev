@@ -69,11 +69,11 @@ impl UserContext {
         }
     }
     
-    pub fn is_authenticated(&self) -> bool {
-        matches!(self, UserContext::Authenticated(_))
-    }
+    // pub fn is_authenticated(&self) -> bool {
+    //     matches!(self, UserContext::Authenticated(_))
+    // }
     
-    pub fn needs_new_token(&self) -> bool {
-        matches!(self, UserContext::Anonymous | UserContext::InvalidToken)
-    }
+    // pub fn needs_new_token(&self) -> bool {
+    //     matches!(self, UserContext::Anonymous | UserContext::InvalidToken)
+    // }
 }

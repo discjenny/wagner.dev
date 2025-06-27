@@ -6,6 +6,7 @@ CREATE TABLE user_preferences (
 );
 
 CREATE INDEX idx_user_preferences_created_at ON user_preferences(created_at);
+CREATE INDEX idx_preference_key ON user_preferences(preference_key);
 
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$

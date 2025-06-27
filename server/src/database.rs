@@ -7,11 +7,17 @@ use std::time::Instant;
 
 pub type DbPool = Pool<PostgresConnectionManager<NoTls>>;
 
+// Constants to avoid repeated string allocations for database defaults
+const DEFAULT_DB_HOST: &str = "127.0.0.1";
+const DEFAULT_DB_USER: &str = "postgres";
+const DEFAULT_DB_PASSWORD: &str = "postgres";
+const DEFAULT_DB_NAME: &str = "dev";
+
 pub async fn init_db() -> Result<DbPool, Box<dyn std::error::Error + Send + Sync>> {
-    let db_host = env::var("DB_HOST").unwrap_or_else(|_| "127.0.0.1".to_string());
-    let db_user = env::var("DB_USER").unwrap_or_else(|_| "postgres".to_string());
-    let db_password = env::var("DB_PASSWORD").unwrap_or_else(|_| "postgres".to_string());
-    let db_name = env::var("DB_NAME").unwrap_or_else(|_| "dev".to_string());
+    let db_host = env::var("DB_HOST").unwrap_or_else(|_| DEFAULT_DB_HOST.to_string());
+    let db_user = env::var("DB_USER").unwrap_or_else(|_| DEFAULT_DB_USER.to_string());
+    let db_password = env::var("DB_PASSWORD").unwrap_or_else(|_| DEFAULT_DB_PASSWORD.to_string());
+    let db_name = env::var("DB_NAME").unwrap_or_else(|_| DEFAULT_DB_NAME.to_string());
     
     let connection_string = format!(
         "host={} user={} password={} dbname={}",
@@ -23,8 +29,8 @@ pub async fn init_db() -> Result<DbPool, Box<dyn std::error::Error + Send + Sync
     let manager = PostgresConnectionManager::new_from_stringlike(connection_string, NoTls)?;
     
     let pool = Pool::builder()
-        .max_size(20)
-        .min_idle(Some(2))
+        .max_size(4)
+        .min_idle(Some(1))
         .max_lifetime(Some(std::time::Duration::from_secs(3600))) // 1 hour
         .idle_timeout(Some(std::time::Duration::from_secs(600)))  // 10 min
         .connection_timeout(std::time::Duration::from_secs(30))
@@ -37,8 +43,15 @@ pub async fn init_db() -> Result<DbPool, Box<dyn std::error::Error + Send + Sync
         
         if let Some(row) = rows.first() {
             let version: &str = row.get(0);
+            // Actually optimize by avoiding Vec allocation entirely
+            let mut parts = version.split_whitespace().take(2);
+            let formatted_version = if let (Some(first), Some(second)) = (parts.next(), parts.next()) {
+                format!("{} v{}", first.to_lowercase(), second)
+            } else {
+                version.to_lowercase()
+            };
             println!("{} connected with {} active connections", 
-                version.split_whitespace().take(2).collect::<Vec<_>>().join(" v").to_lowercase(),
+                formatted_version,
                 pool.state().connections
             );
         }

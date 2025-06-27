@@ -1,14 +1,16 @@
 use axum::{
     extract::Extension,
-    http::StatusCode,
+    http::{StatusCode, Uri},
     response::IntoResponse,
 };
 use askama::Template;
 use askama_web::WebTemplate;
+use std::borrow::Cow;
 
 use crate::database::DbPool;
 use crate::middleware::UserContext;
 use crate::token;
+use crate::DEFAULT_THEME;
 
 #[derive(Template, WebTemplate)]
 #[template(path = "index.html")]
@@ -20,6 +22,7 @@ pub struct IndexTemplate {
 #[template(path = "error.html")]
 pub struct ErrorTemplate {
     pub theme: String,
+    pub requested_path: String,
 }
 
 pub async fn index(
@@ -27,26 +30,31 @@ pub async fn index(
     Extension(db_pool): Extension<DbPool>,
 ) -> IndexTemplate {
     let theme = get_user_theme(&user_context, &db_pool).await
-        .unwrap_or_else(|_| "dark".to_string());
+        .unwrap_or(Cow::Borrowed(DEFAULT_THEME));
     
-    IndexTemplate { theme }
+    IndexTemplate { 
+        theme: theme.into_owned()
+    }
 }
 
 pub async fn not_found(
+    uri: Uri,
     Extension(user_context): Extension<UserContext>,
     Extension(db_pool): Extension<DbPool>,
 ) -> impl IntoResponse {
     let theme = get_user_theme(&user_context, &db_pool).await
-        .unwrap_or_else(|_| "dark".to_string());
+        .unwrap_or(Cow::Borrowed(DEFAULT_THEME));
     
-    (StatusCode::NOT_FOUND, ErrorTemplate { theme })
+    (StatusCode::NOT_FOUND, ErrorTemplate { 
+        theme: theme.into_owned(),
+        requested_path: uri.path().to_string(),
+    })
 }
 
-/// Get user's theme from database or return default
 async fn get_user_theme(
     user_context: &UserContext,
     db_pool: &DbPool,
-) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
+) -> Result<Cow<'static, str>, Box<dyn std::error::Error + Send + Sync>> {
     if let Some(claims) = user_context.get_claims() {
         let preference_key = token::get_preference_key(claims);
         
@@ -57,10 +65,10 @@ async fn get_user_theme(
 
         if let Some(row) = rows.first() {
             let theme: String = row.get("theme");
-            return Ok(theme);
+            return Ok(Cow::Owned(theme));
         }
     }
 
-    // Default theme for new/anonymous users
-    Ok("dark".to_string())
+    // default theme for new/anonymous users
+    Ok(Cow::Borrowed(DEFAULT_THEME))
 } 

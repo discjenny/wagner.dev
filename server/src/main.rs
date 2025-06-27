@@ -7,6 +7,8 @@ use axum::{
 use tower_http::services::ServeDir;
 use tower_cookies::CookieManagerLayer;
 
+pub const DEFAULT_THEME: &str = "dark";
+
 mod database;
 mod routes;
 mod middleware;
@@ -15,6 +17,8 @@ use middleware as mw;
 
 #[tokio::main]
 async fn main() {
+    dotenv::dotenv().ok();
+    
     let db_pool = database::init_db().await.expect("database connection failed");
     database::run_migrations(&db_pool).await.expect("database migrations failed");
 
@@ -22,6 +26,7 @@ async fn main() {
         .route("/", get(routes::pages::index))
         .route("/api/theme", get(routes::themes::get_theme))
         .route("/api/theme", post(routes::themes::set_theme))
+        .route("/api/icon/{name}", get(routes::icons::get_icon))
         .nest_service("/static", ServeDir::new("static"))
         .fallback(routes::pages::not_found)
         .layer(Extension(db_pool))
