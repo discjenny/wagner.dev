@@ -7,7 +7,6 @@ use std::time::Instant;
 
 pub type DbPool = Pool<PostgresConnectionManager<NoTls>>;
 
-// Constants to avoid repeated string allocations for database defaults
 const DEFAULT_DB_HOST: &str = "127.0.0.1";
 const DEFAULT_DB_USER: &str = "postgres";
 const DEFAULT_DB_PASSWORD: &str = "postgres";
@@ -43,7 +42,6 @@ pub async fn init_db() -> Result<DbPool, Box<dyn std::error::Error + Send + Sync
         
         if let Some(row) = rows.first() {
             let version: &str = row.get(0);
-            // Actually optimize by avoiding Vec allocation entirely
             let mut parts = version.split_whitespace().take(2);
             let formatted_version = if let (Some(first), Some(second)) = (parts.next(), parts.next()) {
                 format!("{} v{}", first.to_lowercase(), second)
